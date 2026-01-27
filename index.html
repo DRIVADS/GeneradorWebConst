@@ -28,23 +28,6 @@
   </style>
 </head>
 
-<script>
-(() => {
-  'use strict'
-  const forms = document.querySelectorAll('.needs-validation')
-
-  Array.from(forms).forEach(form => {
-    form.addEventListener('submit', event => {
-      if (!form.checkValidity()) {
-        event.preventDefault()
-        event.stopPropagation()
-      }
-      form.classList.add('was-validated')
-    }, false)
-  })
-})()
-</script>
-
 <body>
 
 <main class="form-signin w-100 m-auto text-center">
@@ -55,7 +38,7 @@
       width="110"
       height="110">
 
-    <h1 class="h4 mb-3 fw-normal">Generador Ver 3.5.0 </h1>
+    <h1 class="h4 mb-3 fw-normal">Generador Ver 3.0.0 </h1>
     <p class="text-muted">Generador en línea</p>
 
     <div class="form-floating mb-3">
@@ -65,16 +48,8 @@
         id="id_cif"
         name="id_cif"
         placeholder="ID CIF"
-        required
-        pattern="[0-9]{11}"
-        maxlength="11"
-        inputmode="numeric">
-
+        required>
       <label for="id_cif">ID CIF</label>
-
-      <div class="invalid-feedback">
-        El ID CIF debe contener exactamente 11 números.
-      </div>
     </div>
 
     <div class="form-floating mb-3">
@@ -85,17 +60,8 @@
         name="rfc"
         placeholder="RFC"
         required
-        pattern="[A-Z0-9]{13}"
-        minlength="13"
-        maxlength="13"
-        style="text-transform: uppercase;"
-        inputmode="text">
-
+        style="text-transform: uppercase;">
       <label for="rfc">RFC</label>
-
-      <div class="invalid-feedback">
-        El RFC debe contener exactamente 13 caracteres alfanuméricos.
-      </div>
     </div>
 
     <button class="btn btn-primary w-100 py-2" type="submit">
@@ -103,7 +69,7 @@
     </button>
 
     <p class="mt-4 mb-3 text-body-secondary">
-      © 2026 · SAT Generator
+      © 2025 · SAT Generator
     </p>
 
   </form>
