@@ -32,13 +32,39 @@
 
 <main class="form-signin w-100 m-auto text-center">
   <form method="POST" action="https://sat-generator.onrender.com/generar">
+
+    <!-- Modal Validación SAT -->
+    <div class="modal fade" id="satModal" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+
+          <div class="modal-header">
+            <h5 class="modal-title">Validando datos SAT</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+
+          <div class="modal-body text-center" id="modalStatus">
+            🔄 Preparando validación...
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" id="closeModalBtn" class="btn btn-secondary" data-bs-dismiss="modal" hidden>
+              Cerrar
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+
     <img class="mb-2"
       src="https://cdn.cdnstep.com/rVmSfCiAOuSur6ASiAVw/2.thumb128.webp"
       alt="logo"
       width="110"
       height="110">
 
-    <h1 class="h4 mb-3 fw-normal">Generador Ver 3.0.0 </h1>
+    <h1 class="h4 mb-3 fw-normal">Generador Ver 3.7.0 </h1>
     <p class="text-muted">Generador en línea</p>
 
     <div id="serverStatus" class="alert alert-warning py-2 mb-3" role="alert">
@@ -73,7 +99,7 @@
     </button>
 
     <p class="mt-4 mb-3 text-body-secondary">
-      © 2025 · SAT Generator
+      © 2026 · SAT Generator · Validador
     </p>
 
   </form>
@@ -110,8 +136,8 @@ async function wakeServer() {
     const time = Date.now() - start;
 
     if (time > 4000) {
-      statusBox.className = "alert alert-info py-2 mb-3";
-      statusBox.innerHTML = "⚠️ Servidor despertando (cold start)";
+      statusBox.className = "alert alert-success py-2 mb-3";
+      statusBox.innerHTML = "✅ Servidor despertando (cold start)";
     } else {
       statusBox.className = "alert alert-success py-2 mb-3";
       statusBox.innerHTML = '✅ Servidor listo';
@@ -127,6 +153,69 @@ async function wakeServer() {
 
 wakeServer();
 </script>
+
+<script>
+const form = document.querySelector("form");
+const idInput = document.getElementById("id_cif");
+const rfcInput = document.getElementById("rfc");
+
+const modal = new bootstrap.Modal(document.getElementById("satModal"));
+const modalStatus = document.getElementById("modalStatus");
+const closeBtn = document.getElementById("closeModalBtn");
+
+form.addEventListener("submit", async function (e) {
+  e.preventDefault();
+
+  const idcif = idInput.value.trim();
+  const rfc = rfcInput.value.trim().toUpperCase();
+
+  if (!idcif || !rfc) {
+    modalStatus.innerHTML = "❌ Completa IDCIF y RFC";
+    closeBtn.hidden = false;
+    modal.show();
+    return;
+  }
+
+  closeBtn.hidden = true;
+  modalStatus.innerHTML = "🔎 Validando RFC en SAT...";
+  modal.show();
+
+  const url = `https://siat.sat.gob.mx/app/qr/faces/pages/mobile/validadorqr.jsf?D1=10&D2=1&D3=${idcif}_${rfc}`;
+
+  try {
+    const res = await fetch(url);
+    const html = await res.text();
+
+    // ❌ Sin CIF
+    if (html.includes("no se le ha emitido su Cédula de identificación fiscal")) {
+      modalStatus.innerHTML = "❌ RFC válido pero SIN Cédula Fiscal";
+      closeBtn.hidden = false;
+      return;
+    }
+
+    // ❌ RFC inexistente
+    if (html.includes("RFC no encontrado")) {
+      modalStatus.innerHTML = "❌ RFC inexistente";
+      closeBtn.hidden = false;
+      return;
+    }
+
+    // ✅ OK
+    modalStatus.innerHTML = "✅ RFC válido — Generando constancia...";
+    
+    setTimeout(() => {
+      form.submit();
+    }, 800);
+
+  } catch {
+    modalStatus.innerHTML = "⚠️ Error consultando SAT. Intenta de nuevo.";
+    closeBtn.hidden = false;
+  }
+});
+</script>
+
+
+
 
 
 
