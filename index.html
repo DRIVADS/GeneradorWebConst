@@ -112,7 +112,6 @@
     <p class="mt-4 mb-3 text-body-secondary">
       © 2026 · SAT Generator · Validador
     </p>
-
   </form>
 </main>
 
@@ -129,67 +128,82 @@ window.addEventListener("load", () => {
 </script>
 
 <script>
-const statusBox = document.getElementById("serverStatus");
-const submitBtn = document.getElementById("submitBtn");
+  const statusBox = document.getElementById("serverStatus");
+  const submitBtn = document.getElementById("submitBtn");
 
-async function wakeServer() {
-  statusBox.className = "alert alert-warning py-2 mb-3";
-  statusBox.innerHTML = "🔄 Preparando servidor...";
+  async function wakeServer() {
+    statusBox.className = "alert alert-warning py-2 mb-3";
+    statusBox.innerHTML = "🔄 Preparando servidor...";
 
-  const start = Date.now();
+    const start = Date.now();
 
-  try {
-    await fetch("https://sat-generator.onrender.com/", {
-      mode: "no-cors",
-      cache: "no-store"
-    });
+    try {
+      await fetch("https://sat-generator.onrender.com/", {
+        mode: "no-cors",
+        cache: "no-store"
+      });
 
-    const time = Date.now() - start;
+      const time = Date.now() - start;
 
-    if (time > 4000) {
-      statusBox.className = "alert alert-success py-2 mb-3";
-      statusBox.innerHTML = "✅ Servidor despertando (cold start)";
-    } else {
-      statusBox.className = "alert alert-success py-2 mb-3";
-      statusBox.innerHTML = '✅ Servidor listo';
+      if (time > 4000) {
+        statusBox.className = "alert alert-success py-2 mb-3";
+        statusBox.innerHTML = "✅ Servidor despertando (cold start)";
+      } else {
+        statusBox.className = "alert alert-success py-2 mb-3";
+        statusBox.innerHTML = '✅ Servidor listo';
+      }
+
+      submitBtn.disabled = false;
+
+    } catch {
+      statusBox.className = "alert alert-danger py-2 mb-3";
+      statusBox.innerHTML = "❌ No se pudo conectar al servidor";
     }
-
-    submitBtn.disabled = false;
-
-  } catch {
-    statusBox.className = "alert alert-danger py-2 mb-3";
-    statusBox.innerHTML = "❌ No se pudo conectar al servidor";
   }
-}
 
-wakeServer();
+  wakeServer();
 </script>
+
+
 
 <script>
 const form = document.querySelector("form");
-const idInput = document.getElementById("id_cif");
-const rfcInput = document.getElementById("rfc");
 
-const modal = new bootstrap.Modal(document.getElementById("satModal"));
+const modalElement = document.getElementById("satModal");
+const modal = new bootstrap.Modal(modalElement);
 const modalStatus = document.getElementById("modalStatus");
 const closeBtn = document.getElementById("closeModalBtn");
 
 form.addEventListener("submit", async function (e) {
   e.preventDefault();
 
-  const idcif = idInput.value.trim();
-  const rfc = rfcInput.value.trim().toUpperCase();
+  const idcif = document.getElementById("id_cif").value.trim();
+  const rfc = document.getElementById("rfc").value.trim().toUpperCase();
+  const codigo = document.getElementById("codigo").value.trim();
 
-  if (!idcif || !rfc) {
-    modalStatus.innerHTML = "❌ Completa IDCIF y RFC";
+  // ❌ Campos vacíos
+  if (!idcif || !rfc || !codigo) {
+    modalStatus.innerHTML = "❌ Completa todos los campos";
     closeBtn.hidden = false;
     modal.show();
     return;
   }
 
-  closeBtn.hidden = true;
-  modalStatus.innerHTML = "🔎 Validando RFC en SAT...";
+  // 🔐 VALIDAR CLAVE LOCAL
   modal.show();
+  closeBtn.hidden = true;
+  modalStatus.innerHTML = "🔐 Validando clave...";
+
+  await new Promise(r => setTimeout(r, 600));
+
+  if (codigo !== "LILIYROSY") {
+    modalStatus.innerHTML = "❌ Clave incorrecta. Verifica el acceso.";
+    closeBtn.hidden = false;
+    return;
+  }
+
+  // 📡 VALIDAR SAT
+  modalStatus.innerHTML = "📡 Validando RFC en SAT...";
 
   const url = `https://siat.sat.gob.mx/app/qr/faces/pages/mobile/validadorqr.jsf?D1=10&D2=1&D3=${idcif}_${rfc}`;
 
@@ -197,26 +211,24 @@ form.addEventListener("submit", async function (e) {
     const res = await fetch(url);
     const html = await res.text();
 
-    // ❌ Sin CIF
     if (html.includes("no se le ha emitido su Cédula de identificación fiscal")) {
       modalStatus.innerHTML = "❌ RFC válido pero SIN Cédula Fiscal";
       closeBtn.hidden = false;
       return;
     }
 
-    // ❌ RFC inexistente
     if (html.includes("RFC no encontrado")) {
       modalStatus.innerHTML = "❌ RFC inexistente";
       closeBtn.hidden = false;
       return;
     }
 
-    // ✅ OK
+    // ✅ TODO OK — GENERAR CONSTANCIA
     modalStatus.innerHTML = "✅ RFC válido — Generando constancia...";
-    
+
     setTimeout(() => {
       form.submit();
-    }, 800);
+    }, 700);
 
   } catch {
     modalStatus.innerHTML = "⚠️ Error consultando SAT. Intenta de nuevo.";
@@ -224,8 +236,6 @@ form.addEventListener("submit", async function (e) {
   }
 });
 </script>
-
-
 
 
 
