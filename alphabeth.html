@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Panel de Socios</title>
+
+  <!-- Bootstrap -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-light">
+
+<div class="container mt-5">
+
+  <h2 class="mb-4">👤 Panel de Socios</h2>
+
+  <!-- FORMULARIO -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <h5>Crear Usuario</h5>
+
+      <div class="row">
+        <div class="col"><input id="clave" class="form-control" placeholder="Clave"></div>
+        <div class="col"><input id="usuario" class="form-control" placeholder="Usuario"></div>
+        <div class="col"><input id="nombre" class="form-control" placeholder="Nombre"></div>
+        <div class="col"><input id="apellido" class="form-control" placeholder="Apellido"></div>
+        <div class="col"><input id="saldo" type="number" class="form-control" placeholder="Saldo"></div>
+      </div>
+
+      <button onclick="crearSocio()" class="btn btn-primary mt-3">Crear</button>
+    </div>
+  </div>
+
+  <!-- TABLA -->
+  <div class="card">
+    <div class="card-body">
+      <h5>Lista de Socios</h5>
+
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>Clave</th>
+            <th>Usuario</th>
+            <th>Nombre</th>
+            <th>Apellido</th>
+            <th>Saldo</th>
+          </tr>
+        </thead>
+        <tbody id="tablaSocios"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<script>
+
+const API = "https://sat-generator.onrender.com"; // 👈 CAMBIA ESTO
+
+// ===================== CARGAR SOCIOS =====================
+async function cargarSocios() {
+  const res = await fetch(`${API}/api/socios`);
+  const data = await res.json();
+
+  const tabla = document.getElementById("tablaSocios");
+  tabla.innerHTML = "";
+
+  data.forEach(socio => {
+    tabla.innerHTML += `
+      <tr>
+        <td>${socio[0]}</td>
+        <td>${socio[1]}</td>
+        <td>${socio[2]}</td>
+        <td>${socio[3]}</td>
+        <td>$${socio[4]}</td>
+      </tr>
+    `;
+  });
+}
+
+// ===================== CREAR SOCIO =====================
+async function crearSocio() {
+
+  const datos = {
+    clave: document.getElementById("clave").value,
+    usuario: document.getElementById("usuario").value,
+    nombre: document.getElementById("nombre").value,
+    apellido_pa: document.getElementById("apellido").value,
+    saldo: parseFloat(document.getElementById("saldo").value)
+  };
+
+  await fetch(`${API}/api/socios`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(datos)
+  });
+
+  alert("Usuario creado ✅");
+  cargarSocios();
+}
+
+// ===================== INICIAR =====================
+cargarSocios();
+
+</script>
+
+</body>
+</html>
